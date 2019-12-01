@@ -41,4 +41,4 @@ print(myStack.peek())
 print(myStack.pop())
 print(myStack.pop())
 print(myStack.pop())
-print(myStack.pop())
+
