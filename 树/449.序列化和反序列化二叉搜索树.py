@@ -33,91 +33,78 @@
 #         self.right = None
 
 class Codec:
-
     '''
-    解法一
-    按层次遍历思想迭代，没有考虑二叉搜索树的特点
-    Your runtime beats 18.42 % of python3 submissions
-    Your memory usage beats 16.67 % of python3 submissions (17.1 MB)
-    
-    def serialize(self, root: TreeNode) -> str:
-        """Encodes a tree to a single string.
-        """
-        if not root:
-            return ''
-        res = []
-        queue = [root]
-        while queue:
-            cur = queue.pop(0)
-            if cur:
-                res.append(str(cur.val))
-                queue.append(cur.left)
-                queue.append(cur.right)
-            else:
-                res.append('#')
-        return ','.join(res)
-        
-        
-
-    def deserialize(self, data: str) -> TreeNode:
-        """Decodes your encoded data to tree.
-        """
-        if not data:
-            return None
-        nodes = data.split(',')
-        root = TreeNode(int(nodes[0]))
-        queue = [root]
-        nodes.pop(0)
-        while nodes:
-            parent = queue.pop(0)
-            l = nodes.pop(0)
-            r = nodes.pop(0)
-            if l != '#':
-                parent.left = TreeNode(int(l))
-                queue.append(parent.left)
-            if r != '#':
-                parent.right = TreeNode(int(r))
-                queue.append(parent.right)
-        return root
-    '''
-
-    '''
-    解法二 按先序遍历的思路迭代 
-    Your runtime beats 23.68 % of python3 submissions
+    用前序遍历+中序遍历构造树的方法来构造
+    Your runtime beats 71.79 % of python3 submissions
     Your memory usage beats 16.67 % of python3 submissions (17.2 MB)
     '''
     def serialize(self, root: TreeNode) -> str:
         if not root:
-            return '#'
-        return '%s,%s,%s' % (root.val,self.serialize(root.left),self.serialize(root.right))
+            return []
+        stack = [root]
+        traverse = []
+        while stack:
+            cur = stack.pop()
+            traverse.append(str(cur.val))
+            if cur.right:
+                stack.append(cur.right)
+            if cur.left:
+                stack.append(cur.left)
+        
+        return ','.join(traverse)
         
     
     def deserialize(self, data: str) -> TreeNode:
         if not data:
             return None
-        nodes = data.split(',')
+        vals = list(map(lambda key:int(key),data.split(',')))
+        preorder = vals
+        inorder = sorted(vals)
 
-        def helper(nodes):
-            if nodes[0] == '#':
-                nodes.pop(0)
+        def buildTree(preorder: List[int], inorder: List[int]) -> TreeNode:
+            if not preorder:
                 return None
-            else:
-                val = int(nodes.pop(0))
-                cur = TreeNode(val)
-                cur.left = helper(nodes)
-                cur.right = helper(nodes)
-                return cur
-        return helper(nodes)
+            if len(preorder) == 1:
+                return TreeNode(preorder[0])
+            root = TreeNode(preorder[0])
+            
+            p,i = 0,0
+            cur = root
+            traveled = {}
+            while p < len(preorder)-1 and i < len(inorder):
+                pre = cur
+                if preorder[p]!=inorder[i]:
+                    if cur.val not in traveled:
+                        cur.left = TreeNode(preorder[p+1])
+                        cur = cur.left
+                    else:
+                        cur.right = TreeNode(preorder[p+1])
+                        cur = cur.right
+                    p += 1
+                else:
+                    if i + 1 == len(inorder):break
+                    while inorder[i+1] in traveled:
+                        cur = traveled[inorder[i+1]]
+                        i += 1
+                    i += 1
+                traveled[pre.val] = pre
+            return root    
+
+        return buildTree(preorder,inorder)
+            
+            
 
 # Your Codec object will be instantiated and called as such:
+
 # root = TreeNode(5)
 # l = TreeNode(3)
-# r = TreeNode(4)
+# r = TreeNode(7)
 # l.left = TreeNode(0)
-# r.right = TreeNode(7)
+# r.right = TreeNode(4)
 # root.left = l
 # root.right = r
 # codec = Codec()
+# print(codec.serialize(root))
 # tree = codec.deserialize(codec.serialize(root))
 # print(tree)
 # @lc code=end
