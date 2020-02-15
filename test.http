@@ -1,0 +1,11 @@
+@hostname = api.example.com
+@port = 8080
+@host = {{hostname}}:{{port}}
+@contentType = application/json
+@createdAt = {{$datetime iso8601}}
+
+###
+
+@name = hello
+
+GET https://{{host}}/authors/{{name}} HTTP/1.1
